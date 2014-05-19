@@ -5,3 +5,5 @@ dist
 log
 site_key.txt
 state
+.cabal-sandbox
+cabal.sandbox.config
