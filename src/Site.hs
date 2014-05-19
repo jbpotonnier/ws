@@ -14,7 +14,7 @@ import qualified Data.IntMap as IntMap
 import Model (PersistentState (PersistentState), FindAllCoworkers(FindAllCoworkers), AddCoworker(AddCoworker))
 import Data.Aeson ((.=), object)
 
-handleAddCoworker :: Handler App App ()
+handleAddCoworker :: AppHandler ()
 handleAddCoworker = do
   eitherCoworker <- getJSON
   case eitherCoworker of
@@ -23,12 +23,12 @@ handleAddCoworker = do
       coworkerId <- update (AddCoworker coworker)
       writeJSON $ object [ "key" .= (T.pack . show) coworkerId]
       
-handleFindAllCoworkers :: Handler App App ()
+handleFindAllCoworkers :: AppHandler ()
 handleFindAllCoworkers = do
   coworkers <- query FindAllCoworkers
   writeJSON coworkers
 
-routes :: [(ByteString, Handler App App ())]
+routes :: [(ByteString, AppHandler ())]
 routes = [ ("coworkers", method POST handleAddCoworker)
          , ("coworkers", method GET handleFindAllCoworkers)
          , ("/static", serveDirectory "src/static")
