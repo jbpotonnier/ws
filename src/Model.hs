@@ -20,7 +20,6 @@ import Control.Monad.Reader (ask)
 import Control.Monad.State (get, put)
 import Data.HashMap.Strict (union)
 
-data Entity a b = Entity a b deriving (Show, Typeable)
 
 data Coworker = Coworker {
   coworkerFirstname :: Text,
@@ -28,14 +27,6 @@ data Coworker = Coworker {
   coworkerEmail :: Text
   } deriving (Show, Typeable)
 
-
-instance (ToJSON a, ToJSON b) => ToJSON (Entity a b) where
-  toJSON (Entity k v) = object ["id" .= k] `merge` toJSON v
-         
-
-merge :: Value -> Value -> Value
-merge (Object h) (Object h') = Object (h `union` h')
-merge _ _ = error "Can only merge objects"
 
 instance FromJSON Coworker where
   parseJSON (Object s) = Coworker <$>
@@ -52,13 +43,25 @@ instance ToJSON Coworker where
                                ]
 
 
+data Entity a b = Entity a b deriving (Show, Typeable)
+
+
+instance (ToJSON a, ToJSON b) => ToJSON (Entity a b) where
+  toJSON (Entity k v) = object ["id" .= k] `merge` toJSON v
+         
+
+merge :: Value -> Value -> Value
+merge (Object h) (Object h') = Object (h `union` h')
+merge _ _ = error "Can only merge objects"
+
+
 data PersistentState = PersistentState {
      coworkers :: IntMap Coworker
   } deriving (Show, Typeable)
              
 deriveSafeCopy 0 'base ''Coworker
-deriveSafeCopy 0 'base ''PersistentState
 deriveSafeCopy 0 'base ''Entity
+deriveSafeCopy 0 'base ''PersistentState
 
 
 findAllCoworkers :: Query PersistentState [Entity IntMap.Key Coworker]
